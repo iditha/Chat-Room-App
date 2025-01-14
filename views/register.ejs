@@ -3,13 +3,13 @@
 
 <div class="container d-flex justify-content-center">
   <div class="text-center w-50">
-    <img src="images/logo.png" alt="logo" />
+    <img src="/images/logo.png" alt="logo" />
     <h1 class="mb-3">Please Register</h1>
     <% if (error) { %>
       <h5 class="col-12 text-danger text-center mb-3" id="error-message"><%- error %></h5>
     <% } %>
 
-    <form action="/register" method="POST">
+    <form action="/register" method="POST" class="mb-3">
       <div class="form-floating mb-2">
         <input type="email" class="form-control" id="floatingInput" name="email" placeholder="name@example.com" required>
         <label for="floatingInput">Email address</label>
@@ -25,6 +25,7 @@
 
       <button type="submit" class="btn btn-primary form-control">Next</button>
     </form>
+    <p>Already registered? go to <a href="/">login</a> page</p>
   </div>
 </div>
 
