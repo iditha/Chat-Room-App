@@ -11,7 +11,7 @@
     <form id="registerForm" action="/register" method="POST" class="mb-3" novalidate>
       <div class="form-floating mb-2">
         <input type="email" class="form-control" id="floatingInput" name="email" placeholder="name@example.com"
-               required pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$">
+               required pattern="^[^\s@]{1,30}@[^\s@]{1,30}\.[^\s@]{2,}$">
         <label for="floatingInput">Email address</label>
         <div class="invalid-feedback">Please provide a valid email address.</div>
       </div>
