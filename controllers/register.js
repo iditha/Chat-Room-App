@@ -1,12 +1,33 @@
 const User = require('../models/users'); // Import the User model
+const Cookies = require('cookies'); // Import the cookies package
+const consts = require('../public/javascripts/consts/serverConsts');
 
 exports.getRegister = (req, res) => {
-    const message = req.query.message || '';
-    res.render('register', { error: message });
+    const cookies = new Cookies(req, res);
+
+    // Retrieve cookies for email, firstName, and lastName
+    const email = cookies.get('email') || '';
+    const firstName = cookies.get('firstName') || '';
+    const lastName = cookies.get('lastName') || '';
+    const cookieTimestamp = cookies.get('registerTimestamp');
+
+    // Check if cookies are still valid (not expired)
+    const now = Date.now();
+    const isCookieValid = cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
+
+    // Pass the variables to the view with appropriate defaults
+    res.render('register', {
+        error: '',
+        email: isCookieValid ? email : '',
+        firstName: isCookieValid ? firstName : '',
+        lastName: isCookieValid ? lastName : ''
+    });
 };
+
 
 exports.postRegister = (req, res) => {
     const { email, firstName, lastName } = req.body;
+    const cookies = new Cookies(req, res);
 
     try {
         // Validate input using the User model
@@ -17,41 +38,81 @@ exports.postRegister = (req, res) => {
             throw new Error('Email already exists. Please use a different email.');
         }
 
-        res.redirect(`/register/password?email=${encodeURIComponent(email)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}`);
+        // Save user data in cookies with a 30-second expiration
+        cookies.set('email', email, { maxAge: consts.REGISTER });
+        cookies.set('firstName', firstName, { maxAge: consts.REGISTER });
+        cookies.set('lastName', lastName, { maxAge: consts.REGISTER });
+        cookies.set('registerTimestamp', Date.now().toString(), { maxAge: consts.REGISTER });
+
+        res.redirect(`/register/password`);
     } catch (err) {
-        res.render('register', { error: err.message });
+        // Re-render the form with the entered data and the error message
+        res.render('register', {
+            error: err.message,
+            email: email || '',
+            firstName: firstName || '',
+            lastName: lastName || ''
+        });
     }
 };
 
+
 exports.getRegisterPassword = (req, res) => {
-    const { email, firstName, lastName } = req.query;
+    const cookies = new Cookies(req, res);
 
-    try {
-        // Validate input using the User model
-        User.validateInput(email, firstName, lastName);
+    // Retrieve user data and timestamp from cookies
+    const email = cookies.get('email');
+    const firstName = cookies.get('firstName');
+    const lastName = cookies.get('lastName');
+    const cookieTimestamp = cookies.get('registerTimestamp');
 
-        res.render('registerPassword', {
+    // Check if cookies are valid
+    const now = Date.now();
+    const isCookieValid = cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
+
+    if (isCookieValid && email && firstName && lastName) {
+        return res.render('registerPassword', {
             email,
             firstName,
             lastName,
-            error: '', // Empty error message by default
+            error: '', // No error by default
         });
-    } catch (err) {
-        res.redirect('/register'); // Redirect to registration if validation fails
     }
+
+    // If cookies are expired or invalid, redirect to the first registration page
+    res.redirect('/register');
 };
 
 exports.postRegisterPassword = (req, res) => {
+    const cookies = new Cookies(req, res);
     const { email, firstName, lastName, password, confirmPassword } = req.body;
+
+    // Retrieve the timestamp from cookies
+    const cookieTimestamp = cookies.get('registerTimestamp');
+    const now = Date.now();
+
+    // Check if cookies are valid
+    const isCookieValid = cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
+
+    if (!isCookieValid) {
+        // If cookies have expired, redirect to the first step with a reset form
+        return res.redirect('/register');
+    }
 
     try {
         // Validate password using the User model
         User.validatePassword(password, confirmPassword);
 
         const user = new User(email, firstName, lastName, password);
-        user.save(); // Save user to database
+        user.save(); // Save user to the database
 
-        // Redirect with success message and success flag
+        // Clear cookies after successful registration
+        cookies.set('email');
+        cookies.set('firstName');
+        cookies.set('lastName');
+        cookies.set('registerTimestamp');
+
+        // Redirect with a success message
         res.redirect('/?message=Registration successful! Please log in.&isSuccess=true');
     } catch (err) {
         res.render('registerPassword', {
@@ -62,4 +123,3 @@ exports.postRegisterPassword = (req, res) => {
         });
     }
 };
-

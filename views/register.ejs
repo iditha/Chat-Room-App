@@ -11,25 +11,26 @@
     <form id="registerForm" action="/register" method="POST" class="mb-3" novalidate>
       <div class="form-floating mb-2">
         <input type="email" class="form-control" id="floatingInput" name="email" placeholder="name@example.com"
-               required pattern="^[^\s@]{1,30}@[^\s@]{1,30}\.[^\s@]{2,}$">
+               required pattern="^[^\s@]{1,30}@[^\s@]{1,30}\.[^\s@]{2,}$" value="<%- email || '' %>">
         <label for="floatingInput">Email address</label>
         <div class="invalid-feedback">Please provide a valid email address.</div>
       </div>
       <div class="form-floating mb-2">
         <input type="text" class="form-control" id="floatingFirstName" name="firstName" placeholder="First Name"
-               required pattern="[A-Za-z]{3,32}">
+               required pattern="[A-Za-z]{3,32}" value="<%- firstName || '' %>">
         <label for="floatingFirstName">First Name</label>
         <div class="invalid-feedback">First Name must be 3-32 letters and contain only letters (A-Z, a-z).</div>
       </div>
       <div class="form-floating mb-2">
         <input type="text" class="form-control" id="floatingLastName" name="lastName" placeholder="Last Name"
-               required pattern="[A-Za-z]{3,32}">
+               required pattern="[A-Za-z]{3,32}" value="<%- lastName || '' %>">
         <label for="floatingLastName">Last Name</label>
         <div class="invalid-feedback">Last Name must be 3-32 letters and contain only letters (A-Z, a-z).</div>
       </div>
 
       <button type="submit" class="btn btn-primary form-control">Next</button>
     </form>
+
     <p>Already registered? go to <a href="/">login</a> page</p>
   </div>
 </div>
