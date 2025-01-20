@@ -48,6 +48,12 @@ module.exports = class User {
             throw new Error('Invalid password. Ensure it matches the requirements and confirmation.');
         }
     }
+
+    /** Static method to find a user by email. */
+    static findByEmail(email) {
+        return users.find(user => user.email.toLowerCase() === email.toLowerCase());
+    }
+
 };
 
 /*

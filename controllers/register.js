@@ -107,15 +107,15 @@ exports.postRegisterPassword = (req, res) => {
         user.save(); // Save user to the database
 
         // Clear cookies after successful registration
-        cookies.set('email');
-        cookies.set('firstName');
-        cookies.set('lastName');
-        cookies.set('registerTimestamp');
+        //cookies.set('email');
+        //cookies.set('firstName');
+        //cookies.set('lastName');
+        //cookies.set('registerTimestamp');
 
         // Redirect with a success message
         res.redirect('/?message=Registration successful! Please log in.&isSuccess=true');
     } catch (err) {
-        res.render('registerPassword', {
+        res.render('register', {
             error: err.message,
             email,
             firstName,
