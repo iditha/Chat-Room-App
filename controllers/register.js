@@ -1,6 +1,7 @@
-const User = require('../models/users'); // Import the User model
 const Cookies = require('cookies'); // Import the cookies package
 const consts = require('../public/javascripts/consts/serverConsts');
+const db = require('../models');
+const Sequelize = require('sequelize');
 
 exports.getRegister = (req, res) => {
     const cookies = new Cookies(req, res);
@@ -13,28 +14,32 @@ exports.getRegister = (req, res) => {
 
     // Check if cookies are still valid (not expired)
     const now = Date.now();
-    const isCookieValid = cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
+    const isCookieValid =
+        cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
 
     // Pass the variables to the view with appropriate defaults
     res.render('register', {
         error: '',
         email: isCookieValid ? email : '',
         firstName: isCookieValid ? firstName : '',
-        lastName: isCookieValid ? lastName : ''
+        lastName: isCookieValid ? lastName : '',
     });
 };
 
-
-exports.postRegister = (req, res) => {
+exports.postRegister = async (req, res) => {
     const { email, firstName, lastName } = req.body;
     const cookies = new Cookies(req, res);
 
     try {
-        // Validate input using the User model
-        User.validateInput(email, firstName, lastName);
-
-        // Check if the email already exists in the system
-        if (User.exists(email)) {
+        // Check if the email already exists in the database
+        // Case-insensitive search using LOWER()
+        const existingUser = await db.User.findOne({
+            where: Sequelize.where(
+                Sequelize.fn('LOWER', Sequelize.col('email')),
+                email.toLowerCase()
+            ),
+        });
+        if (existingUser) {
             throw new Error('Email already exists. Please use a different email.');
         }
 
@@ -42,20 +47,20 @@ exports.postRegister = (req, res) => {
         cookies.set('email', email, { maxAge: consts.REGISTER });
         cookies.set('firstName', firstName, { maxAge: consts.REGISTER });
         cookies.set('lastName', lastName, { maxAge: consts.REGISTER });
-        cookies.set('registerTimestamp', Date.now().toString(), { maxAge: consts.REGISTER });
+        cookies.set('registerTimestamp', Date.now().toString(), {
+            maxAge: consts.REGISTER,
+        });
 
         res.redirect(`/register/password`);
     } catch (err) {
-        // Re-render the form with the entered data and the error message
         res.render('register', {
             error: err.message,
             email: email || '',
             firstName: firstName || '',
-            lastName: lastName || ''
+            lastName: lastName || '',
         });
     }
 };
-
 
 exports.getRegisterPassword = (req, res) => {
     const cookies = new Cookies(req, res);
@@ -68,7 +73,8 @@ exports.getRegisterPassword = (req, res) => {
 
     // Check if cookies are valid
     const now = Date.now();
-    const isCookieValid = cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
+    const isCookieValid =
+        cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
 
     if (isCookieValid && email && firstName && lastName) {
         return res.render('registerPassword', {
@@ -83,7 +89,7 @@ exports.getRegisterPassword = (req, res) => {
     res.redirect('/register');
 };
 
-exports.postRegisterPassword = (req, res) => {
+exports.postRegisterPassword = async (req, res) => {
     const cookies = new Cookies(req, res);
     const { email, firstName, lastName, password, confirmPassword } = req.body;
 
@@ -92,7 +98,8 @@ exports.postRegisterPassword = (req, res) => {
     const now = Date.now();
 
     // Check if cookies are valid
-    const isCookieValid = cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
+    const isCookieValid =
+        cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
 
     if (!isCookieValid) {
         // If cookies have expired, redirect to the first step with a reset form
@@ -100,11 +107,13 @@ exports.postRegisterPassword = (req, res) => {
     }
 
     try {
-        // Validate password using the User model
-        User.validatePassword(password, confirmPassword);
+        // Validate password match
+        if (password !== confirmPassword) {
+            throw new Error('Passwords do not match.');
+        }
 
-        const user = new User(email, firstName, lastName, password);
-        user.save(); // Save user to the database
+        // Save the user in the database
+        await db.User.create({ email, firstName, lastName, password });
 
         // Clear cookies after successful registration
         cookies.set('email');
@@ -112,14 +121,29 @@ exports.postRegisterPassword = (req, res) => {
         cookies.set('lastName');
         cookies.set('registerTimestamp');
 
-        // Redirect with a success message
         res.redirect('/?message=Registration successful! Please log in.&isSuccess=true');
     } catch (err) {
-        res.render('register', {
-            error: err.message,
-            email,
-            firstName,
-            lastName,
-        });
+        if (err instanceof Sequelize.ValidationError) {
+            res.render('register', {
+                error: `Invalid input: ${err}`,
+                email,
+                firstName,
+                lastName,
+            });
+        } else if (err instanceof Sequelize.DatabaseError) {
+            res.render('register', {
+                error: `Database error: ${err}`,
+                email,
+                firstName,
+                lastName,
+            });
+        } else {
+            res.render('register', {
+                error: `Unexpected error: ${err}`,
+                email,
+                firstName,
+                lastName,
+            });
+        }
     }
 };

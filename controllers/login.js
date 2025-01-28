@@ -1,13 +1,17 @@
-const User = require('../models/users');
+const User = require('../models/user');
+const db = require('../models');
 
 exports.getLogin = (req, res) => {
     const message = req.query.message || '';
     const isSuccess = req.query.isSuccess === 'true';
 
+    if (req.session.isLoggedIn) {
+        return res.redirect('/homePage');
+    }
     res.render('login', { message, isSuccess });
 };
 
-exports.postLogin = (req, res) => {
+exports.postLogin = async(req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -17,15 +21,15 @@ exports.postLogin = (req, res) => {
         }
 
         // Find the user by email
-        const user = User.findByEmail(email);
-        if (!user) {
+        const user = await db.User.findOne({ where: { email } });
+        if (!user || user.password !== password) {
             throw new Error('Invalid email or password.');
         }
 
-        // Validate password
-        if (user.password !== password) {
-            throw new Error('Invalid email or password.');
-        }
+        // Save session
+        req.session.isLoggedIn = true;
+        req.session.user = { email, firstName: user.firstName };
+
 
         // Redirect to the home page on successful login
         res.redirect('/homePage');
@@ -34,3 +38,5 @@ exports.postLogin = (req, res) => {
         res.redirect(`/?message=${encodeURIComponent(err.message)}&isSuccess=false`);
     }
 };
+
+
