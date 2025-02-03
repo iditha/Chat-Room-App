@@ -1,9 +1,10 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const messageController = require('../controllers/messages');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-router.get('/add', messageController.getAddMessage);
-
-router.post('/add', messageController.postAddMessage);
+// Apply authentication middleware to protect message-related routes
+router.get('/add', authMiddleware, messageController.getAddMessage);
+router.post('/add', authMiddleware, messageController.postAddMessage);
 
 module.exports = router;

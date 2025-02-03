@@ -28,7 +28,7 @@ exports.postLogin = async(req, res) => {
 
         // Save session
         req.session.isLoggedIn = true;
-        req.session.user = { email, firstName: user.firstName };
+        req.session.user = { id: user.id, email, firstName: user.firstName };
 
 
         // Redirect to the home page on successful login

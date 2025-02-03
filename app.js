@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
+const authMiddleware = require('./middlewares/authMiddleware');
 
 // Import database from models/index.js
 const db = require('./models');
@@ -61,20 +62,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware to protect /homePage
-app.use('/homePage', (req, res, next) => {
-    if (!req.session.isLoggedIn) {
-        return res.redirect('/');
-    }
-    next();
-});
-
-app.use('/message/add', (req, res, next) => {
-    if (!req.session.isLoggedIn) {
-        return res.redirect('/');
-    }
-    next();
-});
+// Middleware to protect html
+app.use('/homePage', authMiddleware);
+app.use('/message', authMiddleware); // Protect all message routes
 
 // Routes
 app.use('/', loginRouter);

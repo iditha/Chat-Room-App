@@ -10,26 +10,23 @@ exports.getAddMessage = (req, res) => {
 };
 
 exports.postAddMessage = async (req, res) => {
-
     try {
         const { messageText } = req.body;
-        await db.Message.create({ content: messageText });
+
+        // Create a new message linked to the logged-in user
+        await db.Message.create({
+            content: messageText,
+            userId: req.session.user.id // Associate message with user
+        });
+
         res.redirect('/homePage');
-
     } catch (err) {
-
         if (err instanceof Sequelize.ValidationError) {
-            res.render('addMessage', {
-                error: `Invalid input: ${err}`
-            });
+            res.render('addMessage', { error: `Invalid input: ${err}` });
         } else if (err instanceof Sequelize.DatabaseError) {
-            res.render('addMessage', {
-                error: `Database error: ${err}`
-            });
+            res.render('addMessage', { error: `Database error: ${err}` });
         } else {
-            res.render('addMessage', {
-                error: `Unexpected error: ${err}`,
-            });
+            res.render('addMessage', { error: `Unexpected error: ${err}` });
         }
     }
 };
