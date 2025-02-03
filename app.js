@@ -27,7 +27,7 @@ const registerRouter = require('./routes/register');
 const loginRouter = require('./routes/login');
 const homePageRouter = require('./routes/homePage');
 const messageHandlerRouter = require('./routes/messageFormHandler');
-
+const apiRouter = require('./routes/api');
 
 // Configure session store
 const myStore = new SequelizeStore({
@@ -69,11 +69,19 @@ app.use('/homePage', (req, res, next) => {
     next();
 });
 
+app.use('/message/add', (req, res, next) => {
+    if (!req.session.isLoggedIn) {
+        return res.redirect('/');
+    }
+    next();
+});
+
 // Routes
 app.use('/', loginRouter);
 app.use('/register', registerRouter);
 app.use('/homePage', homePageRouter);
 app.use('/message', messageHandlerRouter);
+app.use('/api', apiRouter);
 
 
 // Catch 404 and forward to error handler

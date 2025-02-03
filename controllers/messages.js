@@ -9,7 +9,7 @@ exports.getAddMessage = (req, res) => {
     res.render('addMessage', {error: null});
 };
 
-    exports.postAddMessage = async (req, res) => {
+exports.postAddMessage = async (req, res) => {
 
     try {
         const { messageText } = req.body;
