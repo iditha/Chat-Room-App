@@ -14,6 +14,10 @@ exports.getMessages = (req, res) => {
     if (isAuthenticated(req, res) !== true) return;
 
     return db.Message.findAll({
+        include: {
+            model: db.User,
+            attributes: ['firstName', 'lastName'],
+        },
         order: [['createdAt', 'DESC']]
     })
         .then((messages) => res.send(messages))

@@ -5,3 +5,13 @@
 .navbar-nav .nav-item .nav-link {
   color: #331a00 !important;
 }
+
+#customForm {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+#customForm .field {
+  text-align: center;
+}
