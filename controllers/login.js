@@ -1,14 +1,29 @@
+const User = require('../models/user');
 const db = require('../models');
+const Cookies = require('cookies');
 
 exports.getLogin = (req, res) => {
-    const message = req.query.message || '';
-    const isSuccess = req.query.isSuccess === 'true';
+    const cookies = new Cookies(req, res);
 
-    res.render('login', { message, isSuccess });
+    // Retrieve and then clear cookies
+    const message = cookies.get('message') || '';
+    const isSuccess = cookies.get('isSuccess') === 'true';
+    const savedEmail = cookies.get('savedEmail') || ''; // Retrieve saved email
+    const savedPassword = cookies.get('savedPassword') || ''; // Retrieve saved password
+
+    cookies.set('message'); // Clear the message cookie
+    cookies.set('isSuccess'); // Clear the isSuccess cookie
+
+    if (req.session.isLoggedIn) {
+        return res.redirect('/homePage');
+    }
+
+    res.render('login', { message, isSuccess, email: savedEmail, password: savedPassword });
 };
 
 exports.postLogin = async (req, res) => {
     const { email, password } = req.body;
+    const cookies = new Cookies(req, res);
 
     try {
         // Validate input fields
@@ -16,15 +31,9 @@ exports.postLogin = async (req, res) => {
             throw new Error('Email and password are required.');
         }
 
-        // Find user by email
+        // Find the user by email
         const user = await db.User.findOne({ where: { email } });
-        if (!user) {
-            throw new Error('Invalid email or password.');
-        }
-
-        // Validate password using bcrypt
-        const isValidPassword = await user.validPassword(password);
-        if (!isValidPassword) {
+        if (!user || user.password !== password) {
             throw new Error('Invalid email or password.');
         }
 
@@ -32,10 +41,22 @@ exports.postLogin = async (req, res) => {
         req.session.isLoggedIn = true;
         req.session.user = { id: user.id, email, firstName: user.firstName };
 
-        // Redirect to the home page on successful login
+        // Clear cookies on successful login
+        cookies.set('message');
+        cookies.set('isSuccess');
+        cookies.set('savedEmail');
+        cookies.set('savedPassword');
+
+        // Redirect to home page
         res.redirect('/homePage');
     } catch (err) {
-        // Redirect back to the login page with an error message
-        res.redirect(`/?message=${encodeURIComponent(err.message)}&isSuccess=false`);
+        // Store error message and keep email & password in cookies
+        cookies.set('message', err.message, { maxAge: 5000 });
+        cookies.set('isSuccess', 'false', { maxAge: 5000 });
+        cookies.set('savedEmail', email, { maxAge: 5000 });
+        cookies.set('savedPassword', password, { maxAge: 5000 });
+
+        // Redirect to login page
+        res.redirect('/');
     }
 };

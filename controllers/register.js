@@ -98,8 +98,7 @@ exports.postRegisterPassword = async (req, res) => {
     const now = Date.now();
 
     // Check if cookies are valid
-    const isCookieValid =
-        cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
+    const isCookieValid = cookieTimestamp && now - parseInt(cookieTimestamp) < consts.REGISTER;
 
     if (!isCookieValid) {
         // If cookies have expired, redirect to the first step with a reset form
@@ -120,8 +119,11 @@ exports.postRegisterPassword = async (req, res) => {
         cookies.set('firstName');
         cookies.set('lastName');
         cookies.set('registerTimestamp');
+        // Store success message in cookies
+        cookies.set('message', 'Registration successful! Please log in.', { maxAge: 5000 });
+        cookies.set('isSuccess', 'true', { maxAge: 5000 });
 
-        res.redirect('/?message=Registration successful! Please log in.&isSuccess=true');
+        res.redirect('/');
     } catch (err) {
         if (err instanceof Sequelize.ValidationError) {
             res.render('register', {
