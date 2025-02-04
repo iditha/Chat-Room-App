@@ -1,18 +1,28 @@
 const db = require('../models');
 const consts = require('../public/javascripts/consts/serverConsts');
-const {Op} = require('sequelize');
+const { Op } = require('sequelize');
 const Sequelize = require('sequelize');
 
+const isAuthenticated = (req, res) => {
+    if (!req.session || !req.session.isLoggedIn) {
+        return res.status(401).send({ error: consts.UNAUTHORIZED_ACCESS });
+    }
+    return true;
+};
 
 exports.getMessages = (req, res) => {
+    if (isAuthenticated(req, res) !== true) return;
+
     return db.Message.findAll({
         order: [['createdAt', 'DESC']]
     })
-        .then((ads) => res.send(ads))
-        .catch(() => res.status(400).send({error: consts.MESSAGES_QUERY_FAILED}));
+        .then((messages) => res.send(messages))
+        .catch(() => res.status(400).send({ error: consts.MESSAGES_QUERY_FAILED }));
 };
 
 exports.searchMessagesByText = (req, res) => {
+    if (isAuthenticated(req, res) !== true) return;
+
     const searchString = req.query.searchString;
 
     return db.Message.findAll({
@@ -23,19 +33,20 @@ exports.searchMessagesByText = (req, res) => {
         },
         order: [['createdAt', 'DESC']]
     })
-        .then((ads) => res.send(ads))
-        .catch(() => res.status(400).send({error: consts.MESSAGES_QUERY_FAILED}));
+        .then((messages) => res.send(messages))
+        .catch(() => res.status(400).send({ error: consts.MESSAGES_QUERY_FAILED }));
 };
 
 // Modifies the content of a message identified by messageId based on the provided content value
 exports.modifyMessageContent = (req, res) => {
+    if (isAuthenticated(req, res) !== true) return;
+
     const messageId = req.params.messageId;
     const { content } = req.body;
 
     return db.Message.findByPk(messageId)
         .then((message) => {
             if (!message) {
-                // If trying to update a message that doesn't exist, consider it a success for UX
                 return res.send({ message: consts.MESSAGE_UPDATED });
             }
 
@@ -52,14 +63,14 @@ exports.modifyMessageContent = (req, res) => {
         .catch(() => res.status(400).send({ error: consts.MESSAGE_QUERY_FAILED }));
 };
 
-
 exports.deleteMessage = (req, res) => {
+    if (isAuthenticated(req, res) !== true) return;
+
     const messageId = req.params.messageId;
 
     return db.Message.findByPk(messageId)
         .then((message) => {
             if (!message) {
-                // If trying to delete a message that doesn't exist, consider it a success for UX
                 return res.send({ message: consts.MESSAGE_DELETED });
             }
 
@@ -75,4 +86,3 @@ exports.deleteMessage = (req, res) => {
         })
         .catch(() => res.status(400).send({ error: consts.MESSAGE_QUERY_FAILED }));
 };
-

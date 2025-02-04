@@ -7,6 +7,7 @@ const MESSAGE_QUERY_FAILED = 'There was an error querying message';
 const MESSAGE_DELETED = 'message deleted successfully';
 const DELETE_MESSAGE_VALIDATION_ERR = 'Validation error in deleting message';
 const DELETE_MESSAGE_FAILED = 'Internal server error in deleting message';
+const UNAUTHORIZED_ACCESS = 'Unauthorized access - user is not logged in. ';
 
 module.exports = {
     REGISTER,
@@ -18,4 +19,5 @@ module.exports = {
     MESSAGE_DELETED,
     DELETE_MESSAGE_VALIDATION_ERR,
     DELETE_MESSAGE_FAILED,
+    UNAUTHORIZED_ACCESS,
 };

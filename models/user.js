@@ -1,6 +1,7 @@
 'use strict';
 
 const { DataTypes } = require('sequelize');
+const bcrypt = require('bcrypt');
 
 module.exports = (sequelize) => {
     const User = sequelize.define(
@@ -53,16 +54,30 @@ module.exports = (sequelize) => {
         },
         {
             hooks: {
-                beforeCreate(user) {
-                    user.email = user.email.toLowerCase();
+                beforeCreate: async (user) => {
+                    user.email = user.email.toLowerCase(); // Convert email to lowercase
+                    const salt = await bcrypt.genSalt(10);
+                    user.password = await bcrypt.hash(user.password, salt);
                 },
-                beforeUpdate(user) {
-                    user.email = user.email.toLowerCase();
+                beforeUpdate: async (user) => {
+                    if (user.changed('email')) {
+                        user.email = user.email.toLowerCase(); // Convert email to lowercase on update
+                    }
+                    if (user.changed('password')) {
+                        const salt = await bcrypt.genSalt(10);
+                        user.password = await bcrypt.hash(user.password, salt);
+                    }
                 },
             },
+
             modelName: 'User',
         }
     );
+
+    // Function to compare passwords
+    User.prototype.validPassword = async function (password) {
+        return await bcrypt.compare(password, this.password);
+    };
 
     return User;
 };

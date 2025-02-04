@@ -1,17 +1,13 @@
-const User = require('../models/user');
 const db = require('../models');
 
 exports.getLogin = (req, res) => {
     const message = req.query.message || '';
     const isSuccess = req.query.isSuccess === 'true';
 
-    if (req.session.isLoggedIn) {
-        return res.redirect('/homePage');
-    }
     res.render('login', { message, isSuccess });
 };
 
-exports.postLogin = async(req, res) => {
+exports.postLogin = async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -20,16 +16,21 @@ exports.postLogin = async(req, res) => {
             throw new Error('Email and password are required.');
         }
 
-        // Find the user by email
+        // Find user by email
         const user = await db.User.findOne({ where: { email } });
-        if (!user || user.password !== password) {
+        if (!user) {
+            throw new Error('Invalid email or password.');
+        }
+
+        // Validate password using bcrypt
+        const isValidPassword = await user.validPassword(password);
+        if (!isValidPassword) {
             throw new Error('Invalid email or password.');
         }
 
         // Save session
         req.session.isLoggedIn = true;
         req.session.user = { id: user.id, email, firstName: user.firstName };
-
 
         // Redirect to the home page on successful login
         res.redirect('/homePage');
@@ -38,5 +39,3 @@ exports.postLogin = async(req, res) => {
         res.redirect(`/?message=${encodeURIComponent(err.message)}&isSuccess=false`);
     }
 };
-
-
