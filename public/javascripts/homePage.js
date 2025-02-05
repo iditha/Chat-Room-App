@@ -31,10 +31,12 @@
                         item.User?.lastName || "",
                         item.createdAt,
                         item.updatedAt,
+                        item.approved,
                         dataElement
                     )
                 );
-            } else {
+            }
+            else {
                 dataElement.innerHTML = '<p class="text-center text-danger">No messages found.</p>';
             }
         } catch (err) {

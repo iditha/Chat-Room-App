@@ -2,6 +2,7 @@ const db = require('../models');
 const consts = require('../public/javascripts/consts/serverConsts');
 const { Op } = require('sequelize');
 const Sequelize = require('sequelize');
+const { Message } = require('../models');
 
 const isAuthenticated = (req, res) => {
     if (!req.session || !req.session.isLoggedIn) {
@@ -10,19 +11,30 @@ const isAuthenticated = (req, res) => {
     return true;
 };
 
-exports.getMessages = (req, res) => {
-    if (isAuthenticated(req, res) !== true) return;
+exports.getMessages = async (req, res) => {
+    try {
+        const userId = req.session.user.id; // Ensure this is correct
 
-    return db.Message.findAll({
-        include: {
-            model: db.User,
-            attributes: ['firstName', 'lastName'],
-        },
-        order: [['createdAt', 'DESC']]
-    })
-        .then((messages) => res.send(messages))
-        .catch(() => res.status(400).send({ error: consts.MESSAGES_QUERY_FAILED }));
+        const messages = await Message.findAll({
+            include: { model: require('../models').User, attributes: ['firstName', 'lastName'] },
+            order: [['createdAt', 'DESC']],
+        });
+
+        const updatedMessages = messages.map((msg) => ({
+            id: msg.id,
+            content: msg.content,
+            createdAt: msg.createdAt,
+            updatedAt: msg.updatedAt,
+            User: msg.User,
+            approved: parseInt(msg.userId) === parseInt(userId), // Ensure correct comparison
+        }));
+
+        res.json(updatedMessages);
+    } catch (error) {
+        res.status(400).json({ error: 'Failed to fetch messages' });
+    }
 };
+
 
 exports.searchMessagesByText = (req, res) => {
     if (isAuthenticated(req, res) !== true) return;
