@@ -1,48 +1,40 @@
-(() => {
-    document.addEventListener('DOMContentLoaded', async () => {
-        const loading = document.getElementById('loading');
-        const errorMessage = document.getElementById('errorMessage');
-        const dataElement = document.getElementById('data');
-        const searchByTextButton = document.getElementById('searchByText');
-        const searchByTextInput = document.getElementById('searchByTitleInput');
-        const clearSearch = document.getElementById('clearSearch');
+import messagesApi from "./messagesApi.js";
+import domHandler from "./domHandler.js";
 
-        searchByTextButton.addEventListener("click", (event) => {
-            event.preventDefault();
-            //searchByText(event, searchByTextInput, clearSearch, errorMessage, loading);
-        });
-        clearSearch.addEventListener('click', () => domHandler.cleanSearchClick(clearSearch));
+document.addEventListener('DOMContentLoaded', async () => {
+    const loading = document.getElementById('loading');
+    const errorMessage = document.getElementById('errorMessage');
+    const dataElement = document.getElementById('data');
+    const clearSearch = document.getElementById('clearSearch');
 
-        // Fetch and display messages
-        try {
-            loading.classList.remove("d-none");
-            errorMessage.innerHTML = '';
+    clearSearch.addEventListener('click', () => window.location.href = '/');
 
-            const response = await fetch('/api/messages');
-            if (!response.ok) throw new Error(response.statusText);
+    await messagesApi.fetchMessages(dataElement, loading, errorMessage);
 
-            const data = await response.json();
-            if (data.length > 0) {
-                data.forEach((item) =>
-                    domHandler.addMessage(
-                        "Message",
-                        item.content,
-                        item.User?.firstName || "Anonymous",
-                        item.User?.lastName || "",
-                        item.createdAt,
-                        item.updatedAt,
-                        item.approved,
-                        dataElement
-                    )
-                );
-            }
-            else {
-                dataElement.innerHTML = '<p class="text-center text-danger">No messages found.</p>';
-            }
-        } catch (err) {
-            errorMessage.innerHTML = `Error fetching messages: ${err.message}`;
-        } finally {
-            loading.classList.add("d-none");
+    dataElement.addEventListener('click', async (event) => {
+        const messageElement = event.target.closest('.col'); // Find the closest message container
+        const messageId = event.target.dataset.id;
+
+        if (event.target.classList.contains('delete')) {
+            await messagesApi.deleteMessage(messageId, loading, errorMessage, dataElement);
+        }
+
+        if (event.target.classList.contains('edit')) {
+            const { inputField, saveBtn, cancelBtn, originalContent, contentElement, buttonContainer, editIcon } = domHandler.editMessage(messageElement);
+
+            // Handle Save
+            saveBtn.addEventListener('click', async () => {
+                const newContent = inputField.value;
+                if (newContent.trim() && newContent !== originalContent) {
+                    await messagesApi.editMessage(messageId, newContent, loading, errorMessage, dataElement);
+                }
+                domHandler.resetEditState(inputField, contentElement, buttonContainer, editIcon);
+            });
+
+            // Handle Cancel
+            cancelBtn.addEventListener('click', () => {
+                domHandler.resetEditState(inputField, contentElement, buttonContainer, editIcon);
+            });
         }
     });
-})();
+});

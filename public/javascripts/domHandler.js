@@ -1,8 +1,8 @@
 const domHandler = (() => {
-
-    const addMessage = (title, content, firstName, lastName, createdAt, updatedAt, approved, container) => {
+    const addMessage = (title, content, firstName, lastName, createdAt, updatedAt, approved, container, messageId) => {
         const col = document.createElement('div');
         col.classList.add('col');
+        col.dataset.id = messageId;
 
         const card = document.createElement('div');
         card.classList.add('card', 'border-dark', 'rounded', 'shadow-lg');
@@ -17,6 +17,7 @@ const domHandler = (() => {
         const cardContent = document.createElement('p');
         cardContent.classList.add('card-text', 'text-center');
         cardContent.textContent = content;
+        cardContent.dataset.id = messageId;
 
         const detailsList = document.createElement('ul');
         detailsList.classList.add('list-group', 'list-group-flush');
@@ -37,12 +38,14 @@ const domHandler = (() => {
             deleteIcon.alt = 'delete';
             deleteIcon.width = 70;
             deleteIcon.classList.add('btn', 'delete', 'me-2');
+            deleteIcon.dataset.id = messageId;
 
             const editIcon = document.createElement('img');
             editIcon.src = '/images/edit.png';
             editIcon.alt = 'edit';
             editIcon.width = 70;
             editIcon.classList.add('btn', 'edit', 'me-2');
+            editIcon.dataset.id = messageId;
 
             btnsContainer.appendChild(deleteIcon);
             btnsContainer.appendChild(editIcon);
@@ -61,18 +64,52 @@ const domHandler = (() => {
         container.appendChild(col);
     };
 
+    const editMessage = (messageElement) => {
+        const contentElement = messageElement.querySelector('.card-text');
+        const originalContent = contentElement.textContent;
+        const cardBody = messageElement.querySelector('.card-body');
 
-    /**
-     * Clears search results and reloads the page.
-     * @param {HTMLElement} clearSearch - The clear search button.
-     */
-    const cleanSearchClick = (clearSearch) => {
-        clearSearch.classList.add('d-none');
-        window.location.href = '/';
+        // Hide the edit button
+        const editIcon = messageElement.querySelector('.edit');
+        if (editIcon) editIcon.style.display = 'none';
+
+        // Create an input field
+        const inputField = document.createElement('input');
+        inputField.type = 'text';
+        inputField.value = originalContent;
+        inputField.classList.add('form-control', 'mb-2');
+
+        // Create a container for buttons
+        const buttonContainer = document.createElement('div');
+        buttonContainer.classList.add('d-flex', 'justify-content-start', 'gap-2', 'mt-2');
+
+        // Create Save and Cancel buttons
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Save';
+        saveBtn.classList.add('btn', 'btn-success');
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.classList.add('btn', 'btn-secondary');
+
+        // Append buttons to the container
+        buttonContainer.appendChild(saveBtn);
+        buttonContainer.appendChild(cancelBtn);
+
+        // Replace content with input field and insert buttons
+        contentElement.replaceWith(inputField);
+        inputField.insertAdjacentElement('afterend', buttonContainer);
+
+        return { inputField, saveBtn, cancelBtn, originalContent, contentElement, buttonContainer, editIcon };
     };
 
-    return {
-        addMessage,
-        cleanSearchClick,
+    const resetEditState = (inputField, contentElement, buttonContainer, editIcon) => {
+        inputField.replaceWith(contentElement);
+        buttonContainer.remove();
+        if (editIcon) editIcon.style.display = 'inline-block'; // Show the edit button again
     };
+
+    return { addMessage, editMessage, resetEditState };
 })();
+
+export default domHandler;
