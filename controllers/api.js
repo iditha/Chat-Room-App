@@ -121,3 +121,21 @@ exports.deleteMessage = (req, res) => {
         })
         .catch(() => res.status(400).send({ error: consts.MESSAGE_QUERY_FAILED }));
 };
+
+
+exports.getLatestUpdateTime = async (req, res) => {
+    try {
+        const latestMessage = await db.Message.findOne({
+            attributes: ['updatedAt'],
+            order: [['updatedAt', 'DESC']],
+        });
+
+        if (!latestMessage) {
+            return res.json({ latestUpdatedAt: null });
+        }
+
+        res.json({ latestUpdatedAt: latestMessage.updatedAt });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch latest update time' });
+    }
+};
