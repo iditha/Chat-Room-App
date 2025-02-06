@@ -21,7 +21,6 @@ db.User.hasMany(db.Message, {
 });
 db.Message.belongsTo(db.User, {
     foreignKey: 'userId',
-    onDelete: 'CASCADE',
 });
 
 module.exports = db;

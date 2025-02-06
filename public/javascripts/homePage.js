@@ -1,11 +1,6 @@
-//'use strict';
-
 import messagesApi from "./messagesApi.js";
 import domHandler from "./domHandler.js";
 
-//const { DataTypes } = require('sequelize');
-
-// homePage.js - Update polling mechanism
 document.addEventListener('DOMContentLoaded', async () => {
     const loading = document.getElementById('loading');
     const errorMessage = document.getElementById('errorMessage');
@@ -14,32 +9,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchByText = document.getElementById('searchByText');
     const searchByTextInput = document.getElementById('searchByTextInput');
 
-    let lastUpdatedAt = null;
-    const POLLING_INTERVAL = 10000; // 10 seconds
-
-    async function fetchLatestUpdateTime() {
-        try {
-            const response = await fetch('/api/messages/latest-update');
-            if (!response.ok) throw new Error('Failed to fetch latest update time.');
-            const { latestUpdatedAt } = await response.json();
-            return latestUpdatedAt;
-        } catch (error) {
-            console.error('Error fetching latest update time:', error);
-            return null;
-        }
-    }
-
-    async function pollForUpdates() {
-        const latestUpdatedAt = await fetchLatestUpdateTime();
-        if (latestUpdatedAt && (!lastUpdatedAt || new Date(latestUpdatedAt) > new Date(lastUpdatedAt))) {
-            lastUpdatedAt = latestUpdatedAt;
-            await messagesApi.fetchMessages(dataElement, loading, errorMessage);
-        }
-    }
 
     clearSearch.addEventListener('click', () => window.location.href = '/');
+
     await messagesApi.fetchMessages(dataElement, loading, errorMessage);
-    //setInterval(pollForUpdates, POLLING_INTERVAL);
 
     dataElement.addEventListener('click', async (event) => {
         const messageElement = event.target.closest('.col'); // Find the closest message container
@@ -85,5 +58,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearSearch.classList.add('d-none');
         await messagesApi.fetchMessages(dataElement, loading, errorMessage);
     });
-});
 
+});

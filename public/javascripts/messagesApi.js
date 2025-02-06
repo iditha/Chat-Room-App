@@ -12,12 +12,6 @@ const messagesApi = {
             }
 
             const response = await fetch(url);
-            if (response.status === 401) {
-                window.location.href = '/'; // Redirect if unauthorized
-                return;
-            }
-            console.log("i was before !response.ok");
-
             if (!response.ok) throw new Error(response.statusText);
 
             const data = await response.json();
@@ -41,8 +35,6 @@ const messagesApi = {
             }
         } catch (err) {
             errorMessage.innerHTML = `Error fetching messages: ${err.message}`;
-            console.log("i was in catch");
-
         } finally {
             loading.classList.add("d-none");
         }
@@ -54,10 +46,6 @@ const messagesApi = {
 
         try {
             const response = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
-            if (response.status === 401) {
-                window.location.href = '/'; // Redirect if unauthorized
-                return;
-            }
             if (!response.ok) throw new Error("Failed to delete message.");
 
             await messagesApi.fetchMessages(dataElement, loading, errorMessage); // Re-fetch updated list
@@ -79,10 +67,6 @@ const messagesApi = {
                 body: JSON.stringify({ content: newContent })
             });
 
-            if (response.status === 401) {
-                window.location.href = '/'; // Redirect if unauthorized
-                return;
-            }
             if (!response.ok) throw new Error("Failed to update message.");
 
             await messagesApi.fetchMessages(dataElement, loading, errorMessage); // Re-fetch updated list
