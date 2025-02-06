@@ -52,8 +52,8 @@ const domHandler = (() => {
         }
 
         detailsList.appendChild(createListItem('Name', firstName ? `${firstName} ${lastName}` : 'N/A'));
-        detailsList.appendChild(createListItem('Posted At', new Date(createdAt).toLocaleDateString()));
-        detailsList.appendChild(createListItem('Last Modified', new Date(updatedAt).toLocaleDateString()));
+        detailsList.appendChild(createListItem('Posted At', createdAt));
+        detailsList.appendChild(createListItem('Last Modified', updatedAt));
 
         cardBody.appendChild(cardTitle);
         cardBody.appendChild(cardContent);

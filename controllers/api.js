@@ -25,8 +25,8 @@ exports.getMessages = async (req, res) => {
         const updatedMessages = messages.map((msg) => ({
             id: msg.id,
             content: msg.content,
-            createdAt: msg.createdAt,
-            updatedAt: msg.updatedAt,
+            createdAt: new Date(msg.createdAt).toLocaleString(), // Format date with time
+            updatedAt: new Date(msg.updatedAt).toLocaleString(),
             User: msg.User,
             approved: parseInt(msg.userId) === parseInt(userId), // Ensure correct comparison
         }));
@@ -58,8 +58,8 @@ exports.searchMessagesByText = async (req, res) => {
         const updatedMessages = messages.map((msg) => ({
             id: msg.id,
             content: msg.content,
-            createdAt: msg.createdAt,
-            updatedAt: msg.updatedAt,
+            createdAt: new Date(msg.createdAt).toLocaleString(),
+            updatedAt: new Date(msg.updatedAt).toLocaleString(),
             User: msg.User,
             approved: parseInt(msg.userId) === parseInt(userId) // Ensure correct comparison
         }));
