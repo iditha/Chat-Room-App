@@ -4,12 +4,14 @@ const { Op } = require('sequelize');
 const Sequelize = require('sequelize');
 const { Message } = require('../models');
 
+
 const isAuthenticated = (req, res) => {
     if (!req.session || !req.session.isLoggedIn) {
         return res.status(401).send({ error: consts.UNAUTHORIZED_ACCESS });
     }
     return true;
 };
+
 
 exports.getMessages = async (req, res) => {
     try {
@@ -36,22 +38,38 @@ exports.getMessages = async (req, res) => {
 };
 
 
-exports.searchMessagesByText = (req, res) => {
+exports.searchMessagesByText = async (req, res) => {
     if (isAuthenticated(req, res) !== true) return;
 
     const searchString = req.query.searchString;
+    const userId = req.session.user.id; // Get current logged-in user ID
 
-    return db.Message.findAll({
-        where: {
-            content: {
-                [Op.like]: `%${searchString}%`
+    try {
+        const messages = await db.Message.findAll({
+            where: {
+                content: {
+                    [Op.like]: `%${searchString}%`
+                },
             },
-        },
-        order: [['createdAt', 'DESC']]
-    })
-        .then((messages) => res.send(messages))
-        .catch(() => res.status(400).send({ error: consts.MESSAGES_QUERY_FAILED }));
+            include: { model: db.User, attributes: ['firstName', 'lastName'] },
+            order: [['createdAt', 'DESC']]
+        });
+
+        const updatedMessages = messages.map((msg) => ({
+            id: msg.id,
+            content: msg.content,
+            createdAt: msg.createdAt,
+            updatedAt: msg.updatedAt,
+            User: msg.User,
+            approved: parseInt(msg.userId) === parseInt(userId) // Ensure correct comparison
+        }));
+
+        res.json(updatedMessages);
+    } catch (error) {
+        res.status(400).json({ error: consts.MESSAGES_QUERY_FAILED });
+    }
 };
+
 
 // Modifies the content of a message identified by messageId based on the provided content value
 exports.modifyMessageContent = (req, res) => {
@@ -78,6 +96,7 @@ exports.modifyMessageContent = (req, res) => {
         })
         .catch(() => res.status(400).send({ error: consts.MESSAGE_QUERY_FAILED }));
 };
+
 
 exports.deleteMessage = (req, res) => {
     if (isAuthenticated(req, res) !== true) return;

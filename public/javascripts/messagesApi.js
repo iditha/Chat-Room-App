@@ -1,12 +1,17 @@
 import domHandler from "./domHandler.js";
 
 const messagesApi = {
-    fetchMessages: async (dataElement, loading, errorMessage) => {
+    fetchMessages: async (dataElement, loading, errorMessage, searchQuery = "") => {
         errorMessage.innerHTML = '';
         loading.classList.remove("d-none");
 
         try {
-            const response = await fetch('/api/messages');
+            let url = '/api/messages';
+            if (searchQuery) {
+                url += `/search?searchString=${encodeURIComponent(searchQuery)}`;
+            }
+
+            const response = await fetch(url);
             if (!response.ok) throw new Error(response.statusText);
 
             const data = await response.json();

@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const errorMessage = document.getElementById('errorMessage');
     const dataElement = document.getElementById('data');
     const clearSearch = document.getElementById('clearSearch');
+    const searchByText = document.getElementById('searchByText');
+    const searchByTextInput = document.getElementById('searchByTextInput');
+
 
     clearSearch.addEventListener('click', () => window.location.href = '/');
 
@@ -37,4 +40,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
     });
+
+    // Handle Search
+    searchByText.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const query = searchByTextInput.value.trim();
+        if (query) {
+            clearSearch.classList.remove('d-none');
+        }
+        await messagesApi.fetchMessages(dataElement, loading, errorMessage, query);
+    });
+
+    // Handle Clear Search
+    clearSearch.addEventListener('click', async (event) => {
+        event.preventDefault();
+        searchByTextInput.value = "";
+        clearSearch.classList.add('d-none');
+        await messagesApi.fetchMessages(dataElement, loading, errorMessage);
+    });
+
 });
