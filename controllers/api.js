@@ -2,7 +2,7 @@ const db = require('../models');
 const consts = require('../public/javascripts/consts/serverConsts');
 const { Op } = require('sequelize');
 const Sequelize = require('sequelize');
-const { Message } = require('../models');
+const { Message } = require('../models').Message;
 
 
 const isAuthenticated = (req, res) => {
@@ -14,11 +14,13 @@ const isAuthenticated = (req, res) => {
 
 
 exports.getMessages = async (req, res) => {
-    try {
-        const userId = req.session.user.id; // Ensure this is correct
 
+    if (isAuthenticated(req, res) !== true) return;
+    const userId = req.session.user.id;
+
+    try {
         const messages = await Message.findAll({
-            include: { model: require('../models').User, attributes: ['firstName', 'lastName'] },
+            include: { model: db.User, attributes: ['firstName', 'lastName'] },
             order: [['createdAt', 'DESC']],
         });
 
@@ -33,7 +35,7 @@ exports.getMessages = async (req, res) => {
 
         res.json(updatedMessages);
     } catch (error) {
-        res.status(400).json({ error: 'Failed to fetch messages' });
+        res.status(407).json({ error: 'Failed to fetch messages' });
     }
 };
 
@@ -121,3 +123,22 @@ exports.deleteMessage = (req, res) => {
         })
         .catch(() => res.status(400).send({ error: consts.MESSAGE_QUERY_FAILED }));
 };
+
+
+exports.getLatestUpdateTime = async (req, res) => {
+    try {
+        const latestMessage = await db.Message.findOne({
+            attributes: ['updatedAt'],
+            order: [['updatedAt', 'DESC']],
+        });
+
+        if (!latestMessage) {
+            return res.json({ latestUpdatedAt: null });
+        }
+
+        res.json({ latestUpdatedAt: latestMessage.updatedAt });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch latest update time' });
+    }
+};
+

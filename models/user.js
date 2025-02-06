@@ -70,7 +70,6 @@ module.exports = (sequelize) => {
                 },
             },
 
-            modelName: 'User',
         }
     );
 

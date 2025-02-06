@@ -10,5 +10,8 @@ module.exports = (sequelize) => {
                 notEmpty: true,
             },
         },
+    }, {
+        paranoid: true, // Enables soft delete
+        timestamps: true, // Ensures createdAt, updatedAt, and deletedAt are managed
     });
 };

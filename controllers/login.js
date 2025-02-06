@@ -31,9 +31,15 @@ exports.postLogin = async (req, res) => {
             throw new Error('Email and password are required.');
         }
 
-        // Find the user by email
+        // Find user by email
         const user = await db.User.findOne({ where: { email } });
-        if (!user || user.password !== password) {
+        if (!user) {
+            throw new Error('Invalid email or password.');
+        }
+
+        // Validate password using bcrypt
+        const isValidPassword = await user.validPassword(password);
+        if (!isValidPassword) {
             throw new Error('Invalid email or password.');
         }
 

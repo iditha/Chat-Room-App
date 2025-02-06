@@ -10,5 +10,6 @@ router.put('/messages/:messageId', apiController.modifyMessageContent);
 
 router.delete('/messages/:messageId', apiController.deleteMessage);
 
+//router.get('/messages/latest-update', apiController.getLatestUpdateTime);
 
 module.exports = router;

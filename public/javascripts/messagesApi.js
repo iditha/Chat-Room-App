@@ -16,6 +16,8 @@ const messagesApi = {
                 window.location.href = '/'; // Redirect if unauthorized
                 return;
             }
+            console.log("i was before !response.ok");
+
             if (!response.ok) throw new Error(response.statusText);
 
             const data = await response.json();
@@ -39,6 +41,8 @@ const messagesApi = {
             }
         } catch (err) {
             errorMessage.innerHTML = `Error fetching messages: ${err.message}`;
+            console.log("i was in catch");
+
         } finally {
             loading.classList.add("d-none");
         }
