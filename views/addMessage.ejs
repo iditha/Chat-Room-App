@@ -3,11 +3,11 @@
 
 <div class="container mt-4">
     <form action="/message/add" method="post" id="customForm" class="row justify-content-center mt-5 pt-3 pb-2 mb-4 rounded bg-light border border-2 fw-semibold">
-
         <div class="field col-12 text-center">
             <label for="messageText" class="fw-bolder mb-2">Message Text</label>
             <div class="control">
                 <textarea id="messageText" class="form-control mb-1" name="messageText" rows="4" cols="50" maxlength="200"></textarea>
+                <small id="messageError" class="text-danger mt-2" style="display: none;"></small>
             </div>
         </div>
         <div class="field mb-1 col-12 text-center">

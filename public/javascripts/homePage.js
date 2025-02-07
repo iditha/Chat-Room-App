@@ -44,13 +44,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Handle Search
     searchByText.addEventListener('click', async (event) => {
-        event.preventDefault();
+        event.preventDefault(); // Prevent form submission
         const query = searchByTextInput.value.trim();
-        if (query) {
-            clearSearch.classList.remove('d-none');
+        const searchError = document.getElementById('searchError');
+
+        if (query === '') {
+            searchError.textContent = 'Search field cannot be empty!';
+            searchError.style.display = 'block';
+            return; // Stop execution if empty
+        } else {
+            searchError.style.display = 'none';
         }
+
+        clearSearch.classList.remove('d-none');
         await messagesApi.fetchMessages(dataElement, loading, errorMessage, query);
     });
+
 
     // Handle Clear Search
     clearSearch.addEventListener('click', async (event) => {

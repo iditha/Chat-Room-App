@@ -3,7 +3,11 @@
 
         const registerForm = document.getElementById('registerForm');
         const passwordForm = document.getElementById('registerPasswordForm');
+        const messageForm = document.getElementById('customForm');
+        const messageInput = document.getElementById('messageText');
 
+
+        // Validation for first register Form
         if (registerForm) {
             registerForm.addEventListener('submit', function (event) {
                 const form = event.target;
@@ -19,6 +23,7 @@
             });
         }
 
+        // Validation for password Form
         if (passwordForm) {
             passwordForm.addEventListener('submit', function (event) {
                 const password = document.getElementById('floatingPassword');
@@ -41,6 +46,21 @@
 
                     // Add Bootstrap validation styles
                     passwordForm.classList.add('was-validated');
+                }
+            });
+        }
+
+        // Validation for add message Form
+        if (messageForm) {
+            messageForm.addEventListener('submit', function (event) {
+                const messageError = document.getElementById('messageError');
+                if (messageInput.value.trim() === '') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    messageError.textContent = 'Message cannot be empty!';
+                    messageError.style.display = 'block';
+                } else {
+                    messageError.style.display = 'none';
                 }
             });
         }
