@@ -14,6 +14,8 @@ const isAuthenticated = (req, res) => {
 
 
 exports.getMessages = async (req, res) => {
+    if (isAuthenticated(req, res) !== true) return;
+
     try {
         const userId = req.session.user.id; // Ensure this is correct
 
@@ -124,10 +126,13 @@ exports.deleteMessage = (req, res) => {
 
 
 exports.getLatestUpdateTime = async (req, res) => {
+    if (isAuthenticated(req, res) !== true) return;
+
     try {
         const latestMessage = await db.Message.findOne({
             attributes: ['updatedAt'],
             order: [['updatedAt', 'DESC']],
+            paranoid: false,
         });
 
         if (!latestMessage) {

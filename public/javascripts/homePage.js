@@ -60,20 +60,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         await messagesApi.fetchMessages(dataElement, loading, errorMessage);
     });
 
-    async function fetchLatestUpdateTime() {
-        try {
-            const response = await fetch('/api/messages/latest-update');
-            if (!response.ok) throw new Error('Failed to fetch latest update time.');
-            const { latestUpdatedAt } = await response.json();
-            return latestUpdatedAt;
-        } catch (error) {
-            console.error('Error fetching latest update time:', error);
-            return null;
-        }
-    }
-
     async function pollForUpdates() {
-        const latestUpdatedAt = await fetchLatestUpdateTime();
+        const latestUpdatedAt = await messagesApi.fetchLatestUpdateTime();
         if (latestUpdatedAt && (!lastUpdatedAt || new Date(latestUpdatedAt) > new Date(lastUpdatedAt))) {
             lastUpdatedAt = latestUpdatedAt;
             await messagesApi.fetchMessages(dataElement, loading, errorMessage);
