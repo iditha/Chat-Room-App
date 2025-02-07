@@ -10,6 +10,10 @@ const domHandler = (() => {
         const cardBody = document.createElement('div');
         cardBody.classList.add('card-body');
 
+        // Generate title: first two words of content
+        const titleWords = content.trim() ? content.split(/\s+/).slice(0, 2).join(' ') : "Untitled";
+        title = approved ? `"${titleWords}..." - by You` : `"${titleWords}..."`;
+
         const cardTitle = document.createElement('h5');
         cardTitle.classList.add('card-title', 'text-center');
         cardTitle.textContent = title;
