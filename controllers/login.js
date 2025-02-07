@@ -2,6 +2,7 @@ const User = require('../models/user');
 const db = require('../models');
 const Cookies = require('cookies');
 
+
 exports.getLogin = (req, res) => {
     const cookies = new Cookies(req, res);
 

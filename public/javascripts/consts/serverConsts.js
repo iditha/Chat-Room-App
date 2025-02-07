@@ -8,6 +8,8 @@ const MESSAGE_DELETED = 'message deleted successfully';
 const DELETE_MESSAGE_VALIDATION_ERR = 'Validation error in deleting message';
 const DELETE_MESSAGE_FAILED = 'Internal server error in deleting message';
 const UNAUTHORIZED_ACCESS = 'Unauthorized access - user is not logged in. ';
+const INTERNAL_SERVER_ERR = 'Internal Server Error';
+const GENERAL_LOGOUT_ERR_MSG = 'An error occurred during logout. Please try again later.';
 
 module.exports = {
     REGISTER,
@@ -20,4 +22,6 @@ module.exports = {
     DELETE_MESSAGE_VALIDATION_ERR,
     DELETE_MESSAGE_FAILED,
     UNAUTHORIZED_ACCESS,
+    INTERNAL_SERVER_ERR,
+    GENERAL_LOGOUT_ERR_MSG
 };
