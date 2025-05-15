@@ -8,6 +8,3 @@
 <h1>Assumptions</h1>
 <p>The site use bootstrap CDN therefore assumes an internet connection is available.</p>
 
-<h1>A comment</h1>
-<p>I would like to use one of the three days allowed for late submissions.</p>
-
